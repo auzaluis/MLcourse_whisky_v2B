@@ -115,14 +115,18 @@ table_single <- function(dataFrame, indicador) {
   dataFrame %>% 
     count(.data[[indicador]]) %>%
     mutate(Proporción = n/sum(n),
-           KPI = rep(indicador, times = nrow(.)))
+           KPI = rep(indicador, times = nrow(.))) %>% 
+    relocate(KPI, .before = indicador)
   
 }
 
 
-table_single(dataFrame = DF3 %>% 
-               rename(Marcas = `¿Cuál es la marca que más compra?`),
-             indicador = "Marcas")
+tabla_lealtad <-
+  table_single(dataFrame = DF3 %>% 
+                 rename(Lealtad = `¿Cuál es la marca que más compra?`),
+               indicador = "Lealtad") %>% 
+  rename(Marcas = Lealtad)
+
 
 
 table_multiple <- function(dataFrame, indicador) {
@@ -140,8 +144,31 @@ table_multiple <- function(dataFrame, indicador) {
   
 }
 
-bind_rows(table_multiple(dataFrame = DF3,
-                         indicador = "Conocimiento"),
-          table_multiple(dataFrame = DF3,
-                         indicador = "Prueba"))
+tabla_conocimiento <- table_multiple(dataFrame = DF3,
+                                     indicador = "Conocimiento")
+
+tabla_prueba <- table_multiple(dataFrame = DF3,
+                               indicador = "Prueba")
+
+
+bind_rows(tabla_conocimiento,
+          tabla_prueba,
+          tabla_lealtad) %>%
+  
+  filter(Marcas != "Ninguno")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
