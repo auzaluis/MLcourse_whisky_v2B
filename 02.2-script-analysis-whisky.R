@@ -5,7 +5,10 @@ library(viridis)
 library(openxlsx)
 
 glimpse(DF3)
-DF3 <- DF3 %>% as_tibble()
+DF3 <- DF3 %>%
+  as_tibble() %>%
+  mutate(across(.cols = everything(),
+                .fns = ~ gsub("Johnny Walker", "Johnnie Walker", .)))
 
 # Generando gráficos ----
 
@@ -16,6 +19,8 @@ tabla_lealtad <- DF3 %>%
   count(`¿Cuál es la marca que más compra?`) %>% 
   # ordenar la tabla
   arrange(desc(n)) %>% 
+  # eliminar NINGUNO
+  filter(`¿Cuál es la marca que más compra?` != "Ninguno") %>% 
   # calcular los %
   mutate(proporción = n/sum(n),
          porcentaje = scales::percent(proporción))
@@ -57,5 +62,59 @@ tabla_lealtad %>%
   
   theme(legend.position = "none",
         panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
         axis.title = element_blank())
+
+
+
+## Prueba
+
+DF3 %>% 
+  
+  pivot_longer(cols = starts_with("Prueba"),
+               names_to = "Variable",
+               values_to = "Marca") %>%
+  select(Marca) %>%
+  na.omit() %>%
+  count(Marca) %>% 
+  mutate(proporción = n/nrow(DF3),
+         porcentaje = scales::percent(proporción)) %>% 
+  # Ordena el gráfico
+  mutate(Marca = factor(Marca),
+         Marca = fct_reorder(Marca, n, .desc = T)) %>% 
+  
+  ggplot(mapping = aes(x = Marca,
+                       y = proporción,
+                       fill =Marca,
+                       label = porcentaje)) +
+  geom_col() +
+  
+  geom_label(fill = "white") +
+  
+  theme_minimal() +
+  
+  labs(title = "Prueba de marca",
+       subtitle = "Cuáles de estas marcas ha comprado alguna vez?",
+       caption = "Johnnie Walker es la marca con mayor % de prueba") +
+  
+  scale_fill_viridis_d() +
+  
+  scale_y_continuous(labels = scales::percent) +
+  
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.title = element_blank())
+  
+  
+
+
+
+
+
+
+
+
+
+
 
