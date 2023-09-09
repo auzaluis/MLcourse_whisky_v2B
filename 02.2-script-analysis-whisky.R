@@ -155,7 +155,27 @@ bind_rows(tabla_conocimiento,
           tabla_prueba,
           tabla_lealtad) %>%
   
-  filter(Marcas != "Ninguno")
+  filter(Marcas != "Ninguno") %>% 
+  
+  mutate(Porcentaje = scales::percent(Proporción)) %>% 
+  
+  ggplot(mapping = aes(x = KPI,
+                       y = Proporción,
+                       fill = KPI,
+                       label = Porcentaje)) +
+  
+  geom_col() +
+  
+  geom_label(fill = "white", size = 3) +
+  
+  facet_wrap(~ Marcas) +
+  
+  theme_minimal() +
+  
+  scale_fill_viridis_d() +
+  
+  theme(legend.position = "none",
+        axis.title = element_blank())
 
 
 
