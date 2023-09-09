@@ -108,13 +108,40 @@ DF3 %>%
   
   
 
+## Creación de funciones
+
+table_single <- function(dataFrame, indicador) {
+  
+  dataFrame %>% 
+    count(.data[[indicador]]) %>%
+    mutate(Proporción = n/sum(n),
+           KPI = rep(indicador, times = nrow(.)))
+  
+}
 
 
+table_single(dataFrame = DF3 %>% 
+               rename(Marcas = `¿Cuál es la marca que más compra?`),
+             indicador = "Marcas")
 
 
+table_multiple <- function(dataFrame, indicador) {
+  
+  dataFrame %>% 
+    pivot_longer(cols = starts_with(indicador),
+                 names_to = "Variables",
+                 values_to = "Marcas") %>% 
+    select(Marcas) %>% 
+    na.omit() %>% 
+    count(Marcas) %>% 
+    mutate(Proporción = n/nrow(dataFrame),
+           KPI = rep(indicador, times = nrow(.))) %>% 
+    relocate(KPI, .before = Marcas)
+  
+}
 
-
-
-
-
+bind_rows(table_multiple(dataFrame = DF3,
+                         indicador = "Conocimiento"),
+          table_multiple(dataFrame = DF3,
+                         indicador = "Prueba"))
 
