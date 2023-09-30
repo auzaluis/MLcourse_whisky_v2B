@@ -176,3 +176,45 @@ bind_rows(tabla_conocimiento,
   
   theme(legend.position = "none",
         axis.title = element_blank())
+
+
+# tabla de consideración
+
+DF3 %>% 
+  
+  select(starts_with("Consideración")) %>% 
+  
+  pivot_longer(cols = everything()) %>% 
+  
+  mutate(t2b = ifelse(test = value %in% c("Creo que SÍ la consideraría",
+                                          "Sería mi 1ra opción"),
+                      yes = 1,
+                      no = 0)) %>% 
+  
+  separate(col = "name",
+           into = c("KPI", "Marcas"),
+           sep = "Consideración ") %>% 
+  
+  mutate(KPI = rep("Consideración", times = nrow(.)),
+         Marcas = case_when(
+           Marcas == "Johnny Walker" ~ "Johnnie Walker",
+           Marcas == "Chivas" ~ "Chivas Regal",
+           .default = Marcas
+         ))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
