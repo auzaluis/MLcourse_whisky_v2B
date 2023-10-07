@@ -151,36 +151,9 @@ tabla_prueba <- table_multiple(dataFrame = DF3,
                                indicador = "Prueba")
 
 
-bind_rows(tabla_conocimiento,
-          tabla_prueba,
-          tabla_lealtad) %>%
-  
-  filter(Marcas != "Ninguno") %>% 
-  
-  mutate(Porcentaje = scales::percent(Proporción)) %>% 
-  
-  ggplot(mapping = aes(x = KPI,
-                       y = Proporción,
-                       fill = KPI,
-                       label = Porcentaje)) +
-  
-  geom_col() +
-  
-  geom_label(fill = "white", size = 3) +
-  
-  facet_wrap(~ Marcas) +
-  
-  theme_minimal() +
-  
-  scale_fill_viridis_d() +
-  
-  theme(legend.position = "none",
-        axis.title = element_blank())
-
-
 # tabla de consideración
 
-DF3 %>% 
+tabla_consideración <- DF3 %>% 
   
   select(starts_with("Consideración")) %>% 
   
@@ -200,8 +173,83 @@ DF3 %>%
            Marcas == "Johnny Walker" ~ "Johnnie Walker",
            Marcas == "Chivas" ~ "Chivas Regal",
            .default = Marcas
-         ))
+         )) %>%
+  
+  group_by(KPI, Marcas) %>% 
+  
+  summarise(n = sum(t2b)) %>% 
+  
+  ungroup() %>% 
+  
+  mutate(Proporción = n/nrow(DF3))
 
+
+
+# tabla de recomendación
+
+tabla_recomendación <- DF3 %>% 
+  
+  select(starts_with("Recomendación")) %>% 
+  
+  pivot_longer(cols = everything()) %>% 
+  
+  mutate(t2b = ifelse(test = value %in% c(9,10),
+                      yes = 1,
+                      no = 0)) %>% 
+  
+  separate(col = "name",
+           into = c("KPI", "Marcas"),
+           sep = "Recomendación ") %>% 
+  
+  mutate(KPI = rep("Recomendación", times = nrow(.)),
+         Marcas = case_when(
+           Marcas == "Johnny Walker" ~ "Johnnie Walker",
+           Marcas == "Chivas" ~ "Chivas Regal",
+           .default = Marcas
+         )) %>%
+  
+  group_by(KPI, Marcas) %>% 
+  
+  summarise(n = sum(t2b)) %>% 
+  
+  ungroup() %>% 
+  
+  mutate(Proporción = n/nrow(DF3))
+
+
+
+bind_rows(tabla_conocimiento,
+          tabla_prueba,
+          tabla_lealtad,
+          tabla_consideración,
+          tabla_recomendación) %>%
+  
+  filter(Marcas != "Ninguno") %>% 
+  
+  mutate(Porcentaje = scales::percent(Proporción),
+         KPI = fct_relevel(KPI, c("Conocimiento",
+                                  "Consideración",
+                                  "Prueba",
+                                  "Lealtad",
+                                  "Recomendación"))) %>% 
+  
+  ggplot(mapping = aes(x = KPI,
+                       y = Proporción,
+                       fill = KPI,
+                       label = Porcentaje)) +
+  
+  geom_col() +
+  
+  geom_label(fill = "white", size = 3) +
+  
+  facet_wrap(~ Marcas) +
+  
+  theme_minimal() +
+  
+  scale_fill_viridis_d() +
+  
+  theme(legend.position = "none",
+        axis.title = element_blank())
 
 
 
