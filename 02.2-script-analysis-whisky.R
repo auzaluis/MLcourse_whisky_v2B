@@ -253,6 +253,35 @@ bind_rows(tabla_conocimiento,
 
 
 
+# Mapa perceptual
+
+## Tabla de frecuencias
+
+DF4 <- DF3 %>% 
+  select(`Precio razonable`:`Variedad de maduración (años)`) %>% 
+  pivot_longer(cols = everything(),
+               names_to = "atributo",
+               values_to = "marca")
+
+table_DF4 <- base::table(DF4)
+
+## Tablas de porcentajes
+
+prop.table(table_DF4, margin = 1) %>%
+  round(digits = 2)
+
+prop.table(table_DF4, margin = 2) %>%
+  round(digits = 2)
+
+## Análisis de correspondencias
+
+library(FactoMineR)
+FactoMineR::CA(table_DF4)
+
+
+
+
+
 
 
 
